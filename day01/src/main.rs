@@ -1,3 +1,5 @@
+use commons::{answer::Answer, load_input, solution::Solution};
+
 const MAPPING_TABLE: &[(u32, &str)] = &[
     (0, "zero"),
     (1, "one"),
@@ -48,47 +50,57 @@ macro_rules! reverse_line {
     };
 }
 
+struct Day01;
+
+impl Solution for Day01 {
+    fn first_part(&self, input: &str) -> Answer {
+        let lines = input.lines();
+        let mut values = vec![];
+        for line in lines {
+            let first = find_first(line).unwrap();
+            let last = find_first(&reverse_line!(line)).unwrap_or(first);
+
+            values.push(first * 10 + last)
+        }
+
+        let total: u32 = values.iter().sum();
+
+        Answer::Number(total)
+    }
+
+    fn second_part(&self, input: &str) -> Answer {
+        let lines = input.lines();
+        let reversed_table = reversed_mapping_table!();
+
+        let mut values = vec![];
+
+        let table = mapping_table!();
+
+        for line in lines {
+            let first = get_digit(line, &table);
+
+            let reversed_line = reverse_line!(line);
+
+            let last = get_digit(&reversed_line, &reversed_table);
+
+            values.push(first * 10 + last);
+        }
+
+        let total: u32 = values.iter().sum();
+
+        Answer::Number(total)
+    }
+}
+
 fn main() {
-    let file = std::fs::read_to_string("input.txt").unwrap();
-    let lines = file.lines().map(String::from).collect::<Vec<String>>();
+    let file = load_input!();
 
-    let first = first_part(&lines);
-    let second = second_part(&lines);
+    let day01 = Day01;
+    let first_part = day01.first_part(&file);
+    let second_part = day01.second_part(&file);
 
-    println!("first part:{}", first);
-    println!("second part:{}", second);
-}
-
-fn first_part(lines: &Vec<String>) -> u32 {
-    let mut values = vec![];
-    for line in lines.to_owned() {
-        let first = find_first(&line).unwrap();
-        let last = find_first(&reverse_line!(line)).unwrap_or(first);
-
-        values.push(first * 10 + last)
-    }
-
-    values.iter().sum()
-}
-
-fn second_part(lines: &Vec<String>) -> u32 {
-    let reversed_table = reversed_mapping_table!();
-
-    let mut values = vec![];
-
-    let table = mapping_table!();
-
-    for line in lines.to_owned() {
-        let first = get_digit(&line, &table);
-
-        let reversed_line = reverse_line!(line);
-
-        let last = get_digit(&reversed_line, &reversed_table);
-
-        values.push(first * 10 + last);
-    }
-
-    values.iter().sum()
+    println!("first part:{:?}", first_part);
+    println!("second part:{:?}", second_part);
 }
 
 fn find_first(line: &str) -> Option<u32> {
@@ -108,61 +120,39 @@ fn get_digit(mut line: &str, values: &Vec<(u32, String)>) -> u32 {
 
 #[cfg(test)]
 mod test {
-    use crate::{first_part, get_digit, second_part};
-
-    #[test]
-    fn test_get_digit() {
-        let input = vec!["8sadokptwo", "9asdioh24519023"];
-        let mut result = vec![];
-        for line in input {
-            let digit = get_digit(line, &mapping_table!());
-            result.push(digit)
-        }
-
-        assert_eq!(17 as u32, result.iter().sum())
-    }
-
-    #[test]
-    fn test_reverse_get_digit() {
-        let input = vec!["abcone", "blink1eighttwo"];
-
-        let mut result = vec![];
-        for line in input {
-            let reverse_line = line.chars().rev().map(String::from).collect::<String>();
-            let digit = get_digit(&reverse_line, &reversed_mapping_table!());
-            result.push(digit)
-        }
-
-        assert_eq!(3 as u32, result.iter().sum())
-    }
+    use crate::Day01;
+    use commons::solution::Solution;
 
     #[test]
     fn test_first_part() {
-        let input = vec!["avenged7fold", "18tolife", "3and7"]
+        let input = vec!["1abc2", "pqr3stu8vwx", "a1b2c3d4e5f", "treb7uchet"]
             .into_iter()
             .map(String::from)
             .collect::<Vec<String>>();
+        let day01 = Day01;
 
-        let total = first_part(&input);
+        let total = day01.first_part(&input.join("\n"));
 
-        assert_eq!(132, total)
+        assert_eq!(total, 142.into())
     }
 
     #[test]
     fn test_second_part() {
         let input = vec![
-            "avenged7fold",
-            "18tolife",
-            "3and7",
-            "abcone",
-            "blink1eigthtwo",
+            "two1nine",
+            "eightwothree",
+            "abcone2threexyz",
+            "xtwone3four",
+            "4nineeightseven2",
+            "zoneight234",
+            "7pqrstsixteen",
         ]
         .into_iter()
         .map(String::from)
         .collect::<Vec<String>>();
+        let day01 = Day01;
+        let total = day01.second_part(&input.join("\n"));
 
-        let total = second_part(&input);
-
-        assert_eq!(155, total)
+        assert_eq!(total, 281.into());
     }
 }
